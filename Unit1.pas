@@ -7,7 +7,8 @@ uses
   FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.ConsoleUI.Wait,
   FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt, Data.DB,
-  FireDAC.Comp.DataSet, FireDAC.Comp.Client, FireDAC.Phys.IB, FireDAC.Phys.IBDef,
+  FireDAC.Comp.DataSet, FireDAC.Comp.Client, FireDAC.Phys.IB,
+  FireDAC.Phys.IBDef,
   Web.HTTPApp, FireDAC.Comp.UI;
 
 type
@@ -33,7 +34,9 @@ type
     { Private êÈåæ }
   public
     { Public êÈåæ }
-    function Comment(Text: string): string;
+    function ProcessComment(const Text: string): string;
+    procedure ReadComment(out comment, code: string; const Text: string;
+      cnt: integer = -1);
   end;
 
 var
@@ -42,14 +45,60 @@ var
 implementation
 
 {%CLASSGROUP 'System.Classes.TPersistent'}
-
 {$R *.dfm}
-
 { TDataModule1 }
 
-function TDataModule1.Comment(Text: string): string;
+function TDataModule1.ProcessComment(const Text: string): string;
+var
+  s, t: string;
+  ls: TStringList;
 begin
-  result:=Text;
+  ls := TStringList.Create;
+  try
+    ls.Text := Text;
+    for var i := 0 to ls.Count - 1 do
+    begin
+      s := ls[i];
+      t := '';
+      if s = '' then
+        s := '<br>'
+      else
+        for var j := 1 to Length(s) do
+          if s[j] = ' ' then
+            t := t + '&nbsp;'
+          else
+          begin
+            s := t + Copy(s, j - 1, Length(s));
+            break;
+          end;
+      ls[i] := '<p>' + s + '</p>';
+    end;
+    result := ls.Text;
+  finally
+    ls.Free;
+  end;
+end;
+
+procedure TDataModule1.ReadComment(out comment, code: string;
+  const Text: string; cnt: integer = -1);
+begin
+  var
+  list := TStringList.Create;
+  try
+    comment := '';
+    code := '';
+    list.Text := Text;
+    if cnt = -1 then
+      cnt := list.Count - 1;
+    for var i := 0 to cnt do
+      comment := comment + list[i];
+    for var i := cnt + 1 to list.Count - 1 do
+      code := code + list[i];
+    if code <> '' then
+      code := '<pre><code>' + code + '</code></pre>';
+  finally
+    list.Free;
+  end;
 end;
 
 end.

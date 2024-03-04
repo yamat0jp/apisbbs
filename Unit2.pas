@@ -122,7 +122,7 @@ begin
     FText := '';
     i := 0;
     id := 1;
-    while i < FList.count do
+    while i < FList.Count do
     begin
       s := FList[i];
       state := checkState(id, str, s);

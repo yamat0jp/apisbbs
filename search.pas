@@ -13,9 +13,10 @@ uses System.Variants, System.JSON, System.SysUtils;
 
 procedure Post_Search(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 var
-  text, s: string;
+  text, str1, str2: string;
   JSON: TJSONObject;
   value: TJSONValue;
+  cnt: integer;
 begin
   JSON := Req.Body<TJSONObject>;
   value := JSON.Values['word'];
@@ -30,21 +31,26 @@ begin
     SearchModule1.WordList.DelimitedText := value.value;
     with DataModule1 do
     begin
-      FDTable1.MasterSource.Enabled:=false;
+      FDTable1.MasterSource.Enabled := false;
       FDTable1.First;
       while not FDTable1.Eof do
       begin
-        s := SearchModule1.Execute(FDTable1.FieldByName('comment').AsString);
-        if s <> '' then
-          text := text + '<hr>' + Comment(s);
+        cnt := FDTable1.FieldByName('comcnt').AsInteger;
+        ReadComment(str1, str2, FDTable1.FieldByName('comment').AsString, cnt);
+        SearchModule1.Execute(str1);
+        if str1 <> '' then
+          text := text + '<hr>' + ProcessComment(str1);
         FDTable1.Next;
       end;
     end;
   finally
     SearchModule1.Free;
-    DataModule1.FDTable1.MasterSource.Enabled:=true;
+    DataModule1.FDTable1.MasterSource.Enabled := true;
   end;
-  Res.Send(text);
+  JSON := TJSONObject.Create;
+  JSON.AddPair('response', text);
+  Res.Send(JSON.ToJSON);
+  JSON.Free;
 end;
 
 procedure Post_Register(Req: THorseRequest; Res: THorseResponse; Next: TProc);

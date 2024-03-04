@@ -31,7 +31,6 @@ begin
   finally
     CloseFile(f);
   end;
-
 end;
 
 procedure Post_Help(Req: THorseRequest; Res: THorseResponse; Next: TProc);
