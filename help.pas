@@ -37,8 +37,8 @@ procedure Post_Help(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 begin
   var
   JSON := Req.Body<TJSONObject>;
-  if JSON.Values['help'] <> nil then
-    WriteData(JSON.Values['help'].Value);
+  if JSON.Values['voice'] <> nil then
+    WriteData(JSON.Values['voice'].Value);
 end;
 
 procedure Post_Alert(Req: THorseRequest; Res: THorseResponse; Next: TProc);

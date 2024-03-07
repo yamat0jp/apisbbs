@@ -24,7 +24,7 @@ object DataModule1: TDataModule1
     Connection = FDConnection1
     ResourceOptions.AssignedValues = [rvEscapeExpand]
     TableName = 'maintable'
-    Left = 112
+    Left = 120
     Top = 104
     object FDTable1DBNUMBER: TIntegerField
       FieldName = 'DBNUMBER'
@@ -106,8 +106,7 @@ object DataModule1: TDataModule1
   object FDQuery1: TFDQuery
     Connection = FDConnection1
     SQL.Strings = (
-      'select title, name, datetime from nametable, maintable'
-      '  where dbnumber = 1 and cmnumber = 1;')
+      '')
     Left = 56
     Top = 168
   end

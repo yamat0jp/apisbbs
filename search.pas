@@ -13,9 +13,10 @@ uses System.Variants, System.JSON, System.SysUtils;
 
 procedure Post_Search(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 var
-  text, str1, str2: string;
+  str1, str2, title: string;
   JSON: TJSONObject;
   value: TJSONValue;
+  jsonArray: TJSONArray;
   cnt: integer;
 begin
   JSON := Req.Body<TJSONObject>;
@@ -25,30 +26,45 @@ begin
     Res.Send('');
     Exit;
   end;
-  text := '';
   SearchModule1 := TPageSearch.Create;
   try
     SearchModule1.WordList.DelimitedText := value.value;
+    jsonArray := TJSONArray.Create;
     with DataModule1 do
     begin
-      FDTable1.MasterSource.Enabled := false;
+      DataSource1.Enabled := false;
       FDTable1.First;
       while not FDTable1.Eof do
       begin
         cnt := FDTable1.FieldByName('comcnt').AsInteger;
         ReadComment(str1, str2, FDTable1.FieldByName('comment').AsString, cnt);
-        SearchModule1.Execute(str1);
+        str1 := SearchModule1.Execute(str1);
         if str1 <> '' then
-          text := text + '<hr>' + ProcessComment(str1);
+        begin
+          JSON := TJSONObject.Create;
+          JSON.AddPair('db', 1);
+          JSON.AddPair('number', FDTable1.FieldByName('cmnumber').AsInteger);
+          JSON.AddPair('name', FDTable1.FieldByName('name').AsString);
+          JSON.AddPair('comment', ProcessComment(str1));
+          JSON.AddPair('code', str2);
+          JSON.AddPair('date', FDTable1.FieldByName('datetime').AsString);
+          jsonArray.Add(JSON);
+        end;
         FDTable1.Next;
+      end;
+      if jsonArray.Count > 0 then
+      begin
+        cnt := FDTable1.FieldByName('titlenum').AsInteger;
+        title := FDTable2.Lookup('titlenum', cnt, 'title');
       end;
     end;
   finally
     SearchModule1.Free;
-    DataModule1.FDTable1.MasterSource.Enabled := true;
+    DataModule1.DataSource1.Enabled := true;
   end;
   JSON := TJSONObject.Create;
-  JSON.AddPair('response', text);
+  JSON.AddPair('title', title);
+  JSON.AddPair('response', jsonArray);
   Res.Send(JSON.ToJSON);
   JSON.Free;
 end;

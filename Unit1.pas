@@ -36,7 +36,7 @@ type
     { Public êÈåæ }
     function ProcessComment(const Text: string): string;
     procedure ReadComment(out comment, code: string; const Text: string;
-      cnt: integer = -1);
+      cnt: integer);
   end;
 
 var
@@ -80,7 +80,7 @@ begin
 end;
 
 procedure TDataModule1.ReadComment(out comment, code: string;
-  const Text: string; cnt: integer = -1);
+  const Text: string; cnt: integer);
 begin
   var
   list := TStringList.Create;
@@ -88,11 +88,11 @@ begin
     comment := '';
     code := '';
     list.Text := Text;
-    if cnt = -1 then
-      cnt := list.Count - 1;
-    for var i := 0 to cnt do
+    if cnt = 0 then
+      cnt := list.Count;
+    for var i := 0 to cnt-1 do
       comment := comment + list[i];
-    for var i := cnt + 1 to list.Count - 1 do
+    for var i := cnt to list.Count - 1 do
       code := code + list[i];
     if code <> '' then
       code := '<pre><code>' + code + '</code></pre>';

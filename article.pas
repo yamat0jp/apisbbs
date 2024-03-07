@@ -4,24 +4,23 @@ interface
 
 uses Horse;
 
-procedure Post_Article(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+procedure Get_Article(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 procedure Get_Titles(Req: THorseRequest; Res: THorseResponse; Next: TProc);
-procedure Post_Comments(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+procedure Get_Comments(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 
 implementation
 
 uses Unit1, System.JSON.Serializers, System.SysUtils, System.Variants,
   FireDAC.Stan.Param, System.JSON, DataSet.Serialize, System.Classes;
 
-procedure Post_Article(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+procedure Get_Article(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 var
   tid, id: Variant;
   JSON: TJSONObject;
   cnt: integer;
   str1, str2: string;
 begin
-  JSON := Req.Body<TJSONObject>;
-  tid := JSON.Values['title'].Value;
+  tid := Req.Params['title'];
   id := Req.Params['id'];
   with DataModule1 do
   begin
@@ -48,7 +47,8 @@ var
 begin
   with DataModule1 do
   begin
-    FDQuery1.Open;
+    FDQuery1.Open
+      ('select titlenum, title, name, datetime from nametable, maintable where dbnumber = 1 and cmnumber = 1;');
     jsonArray := FDQuery1.ToJSONArray;
     JSON := TJSONObject.Create;
     try
@@ -61,7 +61,7 @@ begin
   end;
 end;
 
-procedure Post_Comments(Req: THorseRequest; Res: THorseResponse; Next: TProc);
+procedure Get_Comments(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 var
   JSON: TJSONObject;
   jsonArray: TJSONArray;
@@ -69,13 +69,10 @@ var
   title: Variant;
   str1, str2: string;
 begin
-  JSON := Req.Body<TJSONObject>;
-  if JSON.Values['title'] = nil then
-    Exit;
-  title := JSON.Values['title'].Value;
+  title := Req.Params['title'];
   with DataModule1 do
   begin
-    if not FDTable2.Locate('dbnumber;title', VarArrayOf([1, title])) then
+    if not FDTable2.Locate('dbnumber;titlenum', VarArrayOf([1, title])) then
       Exit;
     jsonArray := TJSONArray.Create;
     FDTable1.First;

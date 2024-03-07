@@ -21,9 +21,9 @@ begin
     THorse.Use(Jhonson);
     with THorse.Group.Prefix('/apis') do
     begin
-      Route('/register').Post(index.API_Index);
-      Route('/articles/:id').Post(article.Post_Article);
-      Route('/articles').Post(article.Post_Comments);
+      Route('/register/:title').Post(index.API_Index);
+      Route('/articles/:title/:id').Get(article.Get_Article);
+      Route('/articles/:title').Get(article.Get_Comments);
       Route('/articles').Get(article.Get_Titles);
       Route('/search').Post(search.Post_Search);
       Route('/help').Post(help.Post_Help);
