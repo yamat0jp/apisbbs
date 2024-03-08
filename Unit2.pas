@@ -17,7 +17,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Execute(const Text: string): string;
+    function Execute(var Text: string): boolean;
     property WordList: TStringList read FWordList;
   end;
 
@@ -32,7 +32,7 @@ const
   str = '<span style=background-color:yellow>%s</span>';
 
 var
-  bool: Boolean;
+  bool: boolean;
 
 function TPageSearch.checkState(var st: integer; word, line: string)
   : TFindState;
@@ -109,7 +109,7 @@ begin
   bool := cnt = 0;
 end;
 
-function TPageSearch.Execute(const Text: string): string;
+function TPageSearch.Execute(var Text: string): boolean;
 var
   i, id: integer;
   state: TFindState;
@@ -122,7 +122,7 @@ begin
     FText := '';
     i := 0;
     id := 1;
-    while i < FList.Count do
+    while i < FList.count do
     begin
       s := FList[i];
       state := checkState(id, str, s);
@@ -141,9 +141,8 @@ begin
     end;
     FList.Text := FText;
   end;
-  if bool then
-    result := FList.Text;
+  Text := FList.Text;
+  result := bool;
 end;
 
 end.
-

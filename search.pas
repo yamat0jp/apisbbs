@@ -9,7 +9,7 @@ procedure Post_Register(Req: THorseRequest; Res: THorseResponse; Next: TProc);
 
 implementation
 
-uses System.Variants, System.JSON, System.SysUtils;
+uses System.Variants, System.JSON, System.SysUtils, FireDAC.Stan.Param;
 
 function localSearch(const title: string): TJSONObject;
 var
@@ -21,32 +21,27 @@ begin
   jsonArray := TJSONArray.Create;
   with DataModule1 do
   begin
-    FDTable2.Filter := 'title = ' + QuotedStr(title);
-    FDTable2.Filtered := true;
+    FDQuery1.SQL.Text :=
+      'select * from nametable,maintable where title = :title order by datetime desc;';
+    FDQuery1.ParamByName('title').AsString := title;
+    FDQuery1.Open;
     try
-      FDTable2.First;
-      while not FDTable2.Eof do
+      while not FDQuery1.Eof do
       begin
-        FDTable1.First;
-        while not FDTable1.Eof do
-        begin
-          cnt := FDTable1.FieldByName('comcnt').AsInteger;
-          ReadComment(str1, str2, FDTable1.FieldByName('comment')
-            .AsString, cnt);
-          JSON := TJSONObject.Create;
-          JSON.AddPair('db', 1);
-          JSON.AddPair('number', FDTable1.FieldByName('cmnumber').AsInteger);
-          JSON.AddPair('name', FDTable1.FieldByName('name').AsString);
-          JSON.AddPair('comment', ProcessComment(str1));
-          JSON.AddPair('code', str2);
-          JSON.AddPair('date', FDTable1.FieldByName('datetime').AsDateTime);
-          jsonArray.Add(JSON);
-          FDTable1.Next;
-        end;
-        FDTable2.Next;
+        cnt := FDQuery1.FieldByName('comcnt').AsInteger;
+        ReadComment(str1, str2, FDQuery1.FieldByName('comment').AsString, cnt);
+        JSON := TJSONObject.Create;
+        JSON.AddPair('db', FDQuery1.FieldByName('dbnumber').AsInteger);
+        JSON.AddPair('number', FDQuery1.FieldByName('cmnumber').AsInteger);
+        JSON.AddPair('name', FDQuery1.FieldByName('name').AsString);
+        JSON.AddPair('comment', ProcessComment(str1));
+        JSON.AddPair('code', str2);
+        JSON.AddPair('date', FDQuery1.FieldByName('datetime').AsDateTime);
+        jsonArray.Add(JSON);
+        FDQuery1.Next;
       end;
     finally
-      FDTable2.Filtered := false;
+      FDQuery1.Close;
     end;
   end;
   result := TJSONObject.Create;
@@ -88,8 +83,7 @@ begin
       begin
         cnt := FDTable1.FieldByName('comcnt').AsInteger;
         ReadComment(str1, str2, FDTable1.FieldByName('comment').AsString, cnt);
-        str1 := SearchModule1.Execute(str1);
-        if str1 <> '' then
+        if SearchModule1.Execute(str1) then
         begin
           JSON := TJSONObject.Create;
           JSON.AddPair('db', 1);
