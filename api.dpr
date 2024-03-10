@@ -6,6 +6,7 @@ program api;
 uses
   Horse,
   Horse.Jhonson,
+  Horse.CORS,
   System.SysUtils,
   employee in 'employee.pas',
   index in 'index.pas',
@@ -19,6 +20,7 @@ begin
   DataModule1 := TDataModule1.Create(nil);
   try
     THorse.Use(Jhonson);
+    THorse.Use(CORS);
     with THorse.Group.Prefix('/apis') do
     begin
       Route('/register/:title').Post(index.API_Index);
