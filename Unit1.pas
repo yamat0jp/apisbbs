@@ -61,7 +61,7 @@ begin
       s := ls[i];
       t := '';
       if s = '' then
-        s := '<br>'
+        s := '<br />'
       else
         for var j := 1 to Length(s) do
           if s[j] = ' ' then

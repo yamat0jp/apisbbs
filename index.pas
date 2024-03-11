@@ -36,7 +36,7 @@ begin
     FDQuery1.Open('select MAX(cmnumber) from maintable;');
     id := FDQuery1.FieldByName('max').AsInteger + 1;
     FDQuery1.Close;
-    FDTable1.AppendRecord([1, id, tid, na, comment + code, Date, cnt]);
+    FDTable1.AppendRecord([1, id, tid, na, comment + #13#10 + code, Date, cnt]);
   end;
 end;
 
